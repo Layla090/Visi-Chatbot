@@ -1,0 +1,17 @@
+{
+"intents": [
+    {
+        "tag":"greeting",
+        "patterns": [ "hi", "hello",
+        "hiii", "heyyy",
+        "hey"],
+        "responses":  ["Hello! I my name is Fernando. I am estatic to answer any questions you have about Visitation! How may I help you today?"
+        
+        ]   
+    
+    }
+
+
+]
+
+}
