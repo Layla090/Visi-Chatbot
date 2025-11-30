@@ -35,4 +35,60 @@ with open("intents.json") as file:
 
             # Lemmatize and lower each word and remove duplicates
 
-            words = [lemmatizer.lemmatize(w)]
+            words = [lemmatizer.lemmatize(w, lower()) for w in words if w not in ignore_words]
+            words= sorted(set(words))
+
+            # sort classes
+            classes = sorted(set(classes))
+
+            #prepare training data
+
+        training = []
+        out_empty = [0] * len(classes)
+
+        for doc in documents:
+            bag = []
+            word_patterns = doc[0]
+            word_patterns = [lemmatizer.lematize(word.lower()) for word in word_patterns]
+            for word in words:
+                bag.append(1) if word in word_patterns else bag.append(0)
+
+                output_row = list(out_empty)
+                output_row[classes.index(doc[1])] = 1
+                training.append([bag, output_row])
+
+                
+                random.shuffle(training)
+                training = np.array(training, dtype=object)
+
+                train_x = np.array(list(training[:, 0]))
+                train_y = np.array(list(training[:, 1]))
+
+                # build the model
+
+                model = Sequential()
+                model.add(Dense(128, input_shape=(len(train_x[0]),), activation= "relu"))
+                model.add(Dropout(0.5))
+                model.add(Dense(64, activation= "relu"))
+                model.add(Dropout(0.5))
+                model.add(Dense(len(train_y[0]), activation= "softmax"))
+
+                #compile the model
+                sgd = SGD(learning_rate=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+                model.compile(loss="categorical_crossentropy", optimizer=sgd, metrics=["accuracy"])
+
+                # Train the model (more lmao)
+                model.fit(train_x, train_y, epochs=200, batch_size=5, verbose=1)
+
+                # Save the model and metadata
+                model.save("chatbot_model.h5")
+
+                with open("words.pk1", "wb") as f:
+                    import pickle
+
+                    pickle.dump(words, f)
+
+                    with open("classes.pk1", "wb") as f:
+                        pickle.dump(classes, f)
+
+                        print("Model training complete and saved!")
